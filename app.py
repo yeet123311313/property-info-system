@@ -9,7 +9,7 @@ async def serve(q: Q):
     """Main app handler - routes to home or property page based on args"""
     
     # Check if URL has a hash parameter for direct property link
-    # This enables shareable URLs like https://your-app.railway.app/#property_id=abc-123
+    # This enables shareable URLs like https://property-info-system.onrender.com/#property_id=abc-123
     if q.args['#'] and q.args['#'].startswith('property_id='):
         property_id_from_hash = q.args['#'].replace('property_id=', '')
         if property_id_from_hash and not q.args.go_home:
@@ -129,8 +129,9 @@ async def show_property(q: Q, property_id: str):
     data = q.client.data
     
     # Build shareable URL
-    # When deployed, this will be like: https://your-app.railway.app/#property_id=abc-123
-    base_url = q.app.url if hasattr(q.app, 'url') else 'http://localhost:10101'
+    # Use environment variable for production URL, fallback to localhost for development
+    import os
+    base_url = os.environ.get('RENDER_EXTERNAL_URL', 'http://localhost:10101')
     shareable_url = f"{base_url}/#property_id={property_id}"
     
     # Build the property sheet UI
@@ -162,7 +163,7 @@ async def show_property(q: Q, property_id: str):
         items=[
             ui.text(f'**Shareable URL for CRM:** Copy this link to use in your CRM'),
             ui.textbox(name='shareable_url_display', label='', value=shareable_url, readonly=True),
-            ui.text('_This URL will work when deployed to Railway. Each property has a permanent unique link._'),
+            ui.text('_This URL will work from anywhere. Each property has a permanent unique link._'),
         ]
     )
     
