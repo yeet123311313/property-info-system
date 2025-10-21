@@ -10,8 +10,9 @@ async def serve(q: Q):
     
     # Check if URL has a hash parameter for direct property link
     # This enables shareable URLs like https://property-info-system.onrender.com/#property_id=abc-123
-    if q.args['#'] and q.args['#'].startswith('property_id='):
-        property_id_from_hash = q.args['#'].replace('property_id=', '')
+    hash_param = q.args.get('#', '') or q.args.get('', '')
+    if hash_param and hash_param.startswith('property_id='):
+        property_id_from_hash = hash_param.replace('property_id=', '')
         if property_id_from_hash and not q.args.go_home:
             await show_property(q, property_id_from_hash)
             return
