@@ -8,29 +8,23 @@ init_db()
 async def serve(q: Q):
     """Main app handler - routes to home or property page based on args"""
     
-    # Check if URL has a property_id parameter for direct property link
-    # This enables shareable URLs like https://property-info-system.onrender.com/?property_id=abc-123
-    if q.args.property_id and not q.args.go_home and not q.args.create_new:
-        await show_property(q, q.args.property_id)
-        return
-    
-    # Check if going back home (must be first to override other args)
+    # Check if going back home first
     if q.args.go_home:
         q.client.property_id = None  # Clear property ID
         q.client.initialized = False  # Reset client state
         await show_home(q)
         return
     
-    # Check if we're viewing a specific property
-    if q.args.property_id:
-        await show_property(q, q.args.property_id)
-        return
-    
     # Check if we're creating a new property
     if q.args.create_new:
         property_id = create_property()
-        # Show the property page for the new property
         await show_property(q, property_id)
+        return
+    
+    # Check if URL has a property_id parameter (from shareable link or button click)
+    # This enables shareable URLs like https://property-info-system.onrender.com/?property_id=abc-123
+    if q.args.property_id:
+        await show_property(q, q.args.property_id)
         return
     
     # Default: show home page
