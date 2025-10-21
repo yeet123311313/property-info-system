@@ -8,14 +8,11 @@ init_db()
 async def serve(q: Q):
     """Main app handler - routes to home or property page based on args"""
     
-    # Check if URL has a hash parameter for direct property link
-    # This enables shareable URLs like https://property-info-system.onrender.com/#property_id=abc-123
-    hash_param = q.args['#'] if q.args['#'] else ''
-    if hash_param and hash_param.startswith('property_id='):
-        property_id_from_hash = hash_param.replace('property_id=', '')
-        if property_id_from_hash and not q.args.go_home:
-            await show_property(q, property_id_from_hash)
-            return
+    # Check if URL has a property_id parameter for direct property link
+    # This enables shareable URLs like https://property-info-system.onrender.com/?property_id=abc-123
+    if q.args.property_id and not q.args.go_home and not q.args.create_new:
+        await show_property(q, q.args.property_id)
+        return
     
     # Check if going back home (must be first to override other args)
     if q.args.go_home:
@@ -133,7 +130,7 @@ async def show_property(q: Q, property_id: str):
     # Use environment variable for production URL, fallback to localhost for development
     import os
     base_url = os.environ.get('RENDER_EXTERNAL_URL', 'http://localhost:10101')
-    shareable_url = f"{base_url}/#property_id={property_id}"
+    shareable_url = f"{base_url}/?property_id={property_id}"
     
     # Build the property sheet UI
     q.page['meta'] = ui.meta_card(
